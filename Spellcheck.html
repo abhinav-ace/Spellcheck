@@ -1,0 +1,184 @@
+<!DOCTYPE html> 
+<html>
+    <head>    
+        <style>            
+            body{
+                background-color: beige;
+            }            
+            #heading{
+                
+                text-align: center;
+                color:green;            
+            }            
+            #container{
+                text-align: center;
+                padding:10px;
+            }            
+            #fileinput{
+                padding:10px;                
+            }        
+            #textDisplay{                
+                width:70%;
+                margin-left: auto;
+                margin-right:auto;
+                border: 1px solid black;
+                padding:5px;
+                margin-top:20px;
+            }            
+            .red{                
+                color: red;
+            }            
+            .context-menu {  
+                text-align: center; 
+                background: lightgray;  
+            } 
+            .context-menu ul {                 
+                padding: 0px; 
+                margin: 0px; 
+                min-width: 150px; 
+                list-style: none; 
+            } 
+            .context-menu ul li { 
+                border: 1px solid black; 
+            } 
+            .context-menu ul li a { 
+                text-decoration: none; 
+                color: black; 
+            } 
+            .context-menu ul li:hover { 
+                background: darkgray; 
+            }             
+
+        </style>        
+    </head>
+    
+    <body>
+        <h1 id="heading">Spellcheck</h1>
+        <div id="container">
+            <input id="fileInput" type="file" onchange="readFile()">
+            <div id="textDisplay" contenteditable="true">
+                <p id ="text" spellcheck="false"></p>
+            </div>
+        </div>
+        <div id="contextMenu" class="context-menu" style="display:none"></div>                 
+    
+        <script type="text/javascript">
+            
+            let key="QaXifh6uQRycyMFq"
+            let lines;
+            let badwords=[];
+            let improvement=new Object();
+            let id=0;
+            
+            function readFile(){
+                
+                let file=fileInput.files[0]
+                let reader=new FileReader()
+                reader.readAsText(file)
+                reader.onload=function(){
+                    
+                    text.textContent=reader.result
+                    lines=reader.result
+                    words=lines.split(/([_\W])/)
+                        
+                    let api=`https://api.textgears.com/grammar?key=1gVny1rfj02gy7kY&text=${lines}&language=en-GB`
+            
+                    fetch(api).then(function(response){
+
+                        let data=response.json();
+                        return data;
+
+                    }).then(function(data){
+                        
+                        for(let i of data.response.errors){
+                            badwords.push(i.bad);
+                            improvement[i.bad]=i.better;
+                        }
+                        
+                        return badwords;
+                        
+                    }).then(function(){                        
+                        
+                    finalp=document.createElement("p");
+                        
+                        for(var x of words){
+                            
+                            if(badwords.includes(x)){
+                                
+                                var span=document.createElement("span");
+                                var spantxt=document.createTextNode(x);
+                                span.append(spantxt);
+                                finalp.append(span)
+                                span.classList.add("red")
+                                id+=1
+                                span.setAttribute("id",id)
+                                span.setAttribute("value",x)
+                            }
+                                                            
+                            else{
+                                
+                                var span=document.createElement("span");
+                                var spantxt=document.createTextNode(x);
+                                span.append(spantxt)
+                                span.addEventListener("contextmenu",function(event){
+                                    event.preventDefault();
+                                })
+                                finalp.append(span)
+                            }
+                            }
+                        
+                        text.textContent=""
+                        text.append(finalp);
+                    })                    
+                }
+            }
+            
+            document.addEventListener("contextmenu",function(){
+                
+                let id=event.target.id
+                let element=document.getElementById(id);
+                event.preventDefault();
+                document.getElementById("contextMenu").innerHTML=""
+                var div1=document.createElement("div");
+                var ul1=document.createElement("ul");
+                var wrongword=document.getElementById(id).getAttribute("value");
+                var idcorrect=0;
+                
+                for (correct of improvement[wrongword]){
+                    
+                    var li1=document.createElement("li");
+                    var p1=document.createElement("p");
+                    var p1txt=document.createTextNode(correct)
+                    idcorrect+=1;
+                    li1.setAttribute("id","a"+idcorrect)
+                    p1.append(p1txt);
+                    li1.append(p1);
+                    ul1.append(li1);
+                    li1.onclick=()=>{
+                        let curid=event.currentTarget.id
+                        element.textContent=document.getElementById(curid).textContent;
+                        element.style.color="black";
+                    }
+                }
+
+                div1.append(ul1);
+
+                document.getElementById("contextMenu").append(div1);
+                document.getElementById("contextMenu").style.display = 'block';
+                document.getElementById("contextMenu").style.position="absolute";
+                document.getElementById("contextMenu").style.left=event.pageX + "px"; 
+                document.getElementById("contextMenu").style.top=event.pageY + "px";
+            
+            })
+            
+            document.onclick = hideMenu;
+            
+            function hideMenu() { 
+                
+                document.getElementById("contextMenu").style.display="none" ;
+                
+            }         
+                     
+        </script>        
+    </body>
+</html>
