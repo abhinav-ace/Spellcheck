@@ -7,3 +7,6 @@ Suggestions and some other useful information will be provided on the input text
 Simply open the Spellcheck.html using a browser.
 Incase the output is not showing; its probably because of the api-key.\
 So visit https://textgears.com/api and generate a new api-key and update it in the api variable in the javascript of the spellcheck.html.
+
+### Here is a Demo-link for the project
+Heroku - https://spellcheck-abhinavjain.herokuapp.com/
